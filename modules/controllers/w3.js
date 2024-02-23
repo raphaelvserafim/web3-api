@@ -29,12 +29,12 @@ class W3 {
   }
 
 
-  encrypt(key, password) {
-    return this.eth.accounts.encrypt(key, password);
+  async encrypt(key, password) {
+    return await this.eth.accounts.encrypt(key, password);
   }
 
-  decrypt(keystore, password) {
-    return this.eth.accounts.decrypt(keystore, password);
+  async decrypt(keystore, password) {
+    return await this.eth.accounts.decrypt(keystore, password);
   }
 
   async createWallet(password) {
@@ -42,7 +42,7 @@ class W3 {
       const newAccount = this.eth.accounts.create();
       const { address, privateKey } = newAccount;
       if (privateKey && address) {
-        const keystore = this.encrypt(privateKey, password);
+        const keystore = await this.encrypt(privateKey, password);
         console.log(keystore);
       }
 
