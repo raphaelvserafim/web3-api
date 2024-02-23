@@ -38,6 +38,12 @@ class W3 {
     return await this.eth.accounts.decrypt(keystore, password);
   }
 
+  async privateKey(address, password) {
+    const keystore = await Keystore.load(address);
+    const decrypt = await this.decrypt(keystore, password);
+    return decrypt;
+  }
+  
   async createWallet(password) {
     try {
       const newAccount = this.eth.accounts.create();
