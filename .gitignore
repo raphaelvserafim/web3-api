@@ -61,4 +61,4 @@ test/**/*.js.map
 .env.development
 .env
 
- 
+keystore/*

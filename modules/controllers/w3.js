@@ -4,6 +4,7 @@ const ERC20 = require("../constants/erc20")
 
 const NETWORKS = require("../constants/networks")
 
+const Keystore = require("../model/keystore");
 class W3 {
   eth;
   erc20;
@@ -43,9 +44,8 @@ class W3 {
       const { address, privateKey } = newAccount;
       if (privateKey && address) {
         const keystore = await this.encrypt(privateKey, password);
-        console.log(keystore);
+        await Keystore.save(address, keystore);
       }
-
       return { status: true, address: address }
     } catch (error) {
       return { status: false, message: error.message }

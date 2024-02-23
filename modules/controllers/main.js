@@ -2,6 +2,8 @@ const W3 = require("../controllers/w3");
 
 class Main {
 
+  
+
   static async newWallet(ctx) {
     try {
       const w3 = new W3({ networkName: "BLAST", isTestnet: true });
