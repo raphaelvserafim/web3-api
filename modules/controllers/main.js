@@ -1,8 +1,7 @@
-const W3 = require("../controllers/w3");
+const W3 = require("../model/w3");
 
 class Main {
 
-  
 
   static async newWallet(ctx) {
     try {

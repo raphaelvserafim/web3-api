@@ -4,7 +4,7 @@ const ERC20 = require("../constants/erc20")
 
 const NETWORKS = require("../constants/networks")
 
-const Keystore = require("../model/keystore");
+const Keystore = require("./keystore");
 class W3 {
   eth;
   erc20;
