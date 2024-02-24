@@ -70,21 +70,32 @@ class W3 {
 
       const senderTokenBalance = await contract.methods.balanceOf(address).call();
 
+
       if (senderTokenBalance < tokenAmountWei) {
         throw new Error(`Sender's balance is insufficient to send the desired tokens.`);
+
       }
 
+      const balanceInWei = await this.eth.getBalance(address);
+      const balanceInEther = this.web3.utils.fromWei(balanceInWei, 'ether');
+
+      const gasLimit = BigInt(2000000);
+
+      const gasPrice = BigInt(await this.eth.getGasPrice());
+
+
       const nonce = await this.eth.getTransactionCount(address);
-      const gasPrice = await this.eth.getGasPrice();
+
       const encodedData = contract.methods.transfer(addressFrom, tokenAmountWei).encodeABI();
 
       const transactionObject = {
         nonce: nonce,
         to: contractAddress,
-        gas: 2000000,
+        gas: gasLimit,
         gasPrice: gasPrice,
         data: encodedData
       };
+
 
       const { privateKey } = await this.privateKey(address, password);
 
@@ -92,13 +103,20 @@ class W3 {
 
       const serializedTx = signedTransaction.rawTransaction;
 
-      this.eth.sendSignedTransaction(serializedTx).on('transactionHash', function (hash) {
-        return { status: true, message: 'Transaction sent', hash }
-      }).on('receipt', function (receipt) {
-        console.log('Transação confirmada! Recibo:', receipt);
-      }).on('error', function (error) {
-        return { status: false, message: error.message }
+      return new Promise((resolve, reject) => {
+        this.eth.sendSignedTransaction(serializedTx)
+          .on('transactionHash', function (hash) {
+            resolve({ status: true, message: 'Transaction sent', hash });
+          })
+          .on('receipt', function (receipt) {
+            console.log('Transação confirmada! Recibo:', receipt);
+          })
+          .on('error', function (error) {
+            reject({ status: false, message: error.message });
+          });
       });
+
+
     } catch (error) {
       return { status: false, message: error.message }
     }
