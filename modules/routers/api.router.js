@@ -1,11 +1,17 @@
 const main = require('../controllers/main');
-module.exports = router => {
-  router.get('/', ctx => {
-    ctx.body = { "status": true, "message": "working..." }
-  }).post('/api/wallet/new', async ctx => {
-    await main.newWallet(ctx);
-  }).post('/api/wallet/private-key', async ctx => {
-    await main.privateKey(ctx);
-  });
-}
 
+const routes = [
+  { method: 'get', path: '/', handler: ctx => { ctx.body = { "status": true, "message": "working..." } } },
+  { method: 'post', path: '/api/wallet/new', handler: main.newWallet },
+  { method: 'post', path: '/api/wallet/private-key', handler: main.privateKey },
+  { method: 'post', path: '/api/wallet/add-token', handler: main.addTokenToWallet },
+  { method: 'post', path: '/api/wallet/send-transaction', handler: main.sendTransaction }
+];
+
+module.exports = router => {
+  routes.forEach(({ method, path, handler }) => {
+    router[method](path, async ctx => {
+      return handler(ctx);
+    });
+  });
+};

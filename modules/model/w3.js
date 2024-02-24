@@ -6,6 +6,7 @@ const NETWORKS = require("../constants/networks")
 
 const Keystore = require("./keystore");
 class W3 {
+  web3;
   eth;
   erc20;
 
@@ -22,7 +23,8 @@ class W3 {
 
     const network = isTestnet ? NETWORKS[networkName].TEST : NETWORKS[networkName].MAIN;
     const web3 = new Web3(network);
-    this.eth = web3.eth;
+    this.web3 = web3;
+    this.eth = this.web3.eth;
 
     if (erc20) {
       this.erc20 = ERC20[erc20];
@@ -43,7 +45,7 @@ class W3 {
     const decrypt = await this.decrypt(keystore, password);
     return decrypt;
   }
-  
+
   async createWallet(password) {
     try {
       const newAccount = this.eth.accounts.create();
@@ -58,6 +60,50 @@ class W3 {
     }
   }
 
+  async sendTransaction(password, address, addressFrom, amount, contractAddress) {
+
+    try {
+
+      const tokenAmountWei = this.web3.utils.toWei(amount.toString(), 'ether');
+
+      const contract = new this.eth.Contract(this.erc20, contractAddress);
+
+      const senderTokenBalance = await contract.methods.balanceOf(address).call();
+
+      if (senderTokenBalance < tokenAmountWei) {
+        throw new Error(`Sender's balance is insufficient to send the desired tokens.`);
+      }
+
+      const nonce = await this.eth.getTransactionCount(address);
+      const gasPrice = await this.eth.getGasPrice();
+      const encodedData = contract.methods.transfer(addressFrom, tokenAmountWei).encodeABI();
+
+      const transactionObject = {
+        nonce: nonce,
+        to: contractAddress,
+        gas: 2000000,
+        gasPrice: gasPrice,
+        data: encodedData
+      };
+
+      const { privateKey } = await this.privateKey(address, password);
+
+      const signedTransaction = await this.eth.accounts.signTransaction(transactionObject, privateKey);
+
+      const serializedTx = signedTransaction.rawTransaction;
+
+      this.eth.sendSignedTransaction(serializedTx).on('transactionHash', function (hash) {
+        return { status: true, message: 'Transaction sent', hash }
+      }).on('receipt', function (receipt) {
+        console.log('Transação confirmada! Recibo:', receipt);
+      }).on('error', function (error) {
+        return { status: false, message: error.message }
+      });
+    } catch (error) {
+      return { status: false, message: error.message }
+    }
+
+  }
 
   async addTokenToWallet(walletAddress, tokenAddress) {
     try {
