@@ -6,6 +6,7 @@ const compress = require('koa-compress');
 const serveStatic = require('koa-static');
 const app = new Koa()
 const router = new Router()
+const Env = require("./config/env");
 
 app.use(compress({
   filter(content_type) {
@@ -21,10 +22,8 @@ app.use(compress({
   br: false
 }))
 app.use(serveStatic(__dirname + '/files'));
-
 app.use(koaBody({ multipart: true }));
 app.use(json())
-
 require('./modules/routers/api.router')(router);
 app.use(router.routes())
-app.listen(3001, () => { console.log("working in port 3001") })
+app.listen(Env.PORT, () => { console.log("working in port: " + Env.PORT) })
